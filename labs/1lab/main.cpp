@@ -1,59 +1,91 @@
 #include <iostream>
-#include <ostream>
 #include <cstring>
-
+#include <fstream>
 using namespace std;
 
-struct note{
-    char name[20];
-    char surname[20];
-    char telephone[20];
-    int  bday[3];
-    note*next;
-    note*prev;
+struct stek{
+  char mark[20];
+  char color[20];
+  stek* next;
 };
 
-note* EnterNotes(note* head){
-        if(head==nullptr){
-            note*temp=new note;
-            cout <<endl<< "Enter strcut specs"<<endl;
-            cout << "Enter name: "<<endl;cin.getline(temp->name,sizeof(temp->name));
-            cout << "Enter surname: "<<endl;cin.getline(temp->surname,sizeof(temp->surname));
-            cout << "Enter telephone: "<<endl;cin.getline(temp->telephone,sizeof(temp->telephone));
-            cout << "Enter bday(3): "<<endl;for(int i = 0;i<3;i++)cin>>temp->bday[i];
-            return temp;
-        }else{
-            while(head->next!=nullptr){
-                head=head->next;
-            }
-            note*temp=new note;
-            cout <<endl<< "Enter strcut specs"<<endl;
-            cout << "Enter name: "<<endl;cin.getline(temp->name,sizeof(temp->name));
-            cout << "Enter surname: "<<endl;cin.getline(temp->surname,sizeof(temp->surname));
-            cout << "Enter telephone: "<<endl;cin.getline(temp->telephone,sizeof(temp->telephone));
-            cout << "Enter bday(3): "<<endl;for(int i = 0;i<3;i++)cin>>temp->bday[i];
-            head->next=temp;
-            temp->prev=head;
-            return temp;
-        }
+stek* top = nullptr;
+
+void add(int l) {
+  while (l != 0) {
+    stek* temp = new stek;
+    cin.ignore(100, '\n');
+    cout << "\nenter mark: ";
+    cin.getline(temp->mark, sizeof(temp->mark));
+    cout << "\nenter color: ";
+    cin.getline(temp->color, sizeof(temp->color));
+    temp->next = top;
+    top = temp;
+    l--;
+  }
 }
-void PrintNotes(note*head){
-    while(head!=nullptr){
-        cout << "Name: "<<head->name<<endl;
-        cout << "Surname: "<<head->surname<<endl;
-        cout << "Telephone: "<<head->telephone<<endl;
-        cout << "Bday: "<<head->bday[0]<<"/"<<head->bday[1]<<"/"<<head->bday[2]<<endl;
-        head=head->next;
+
+void print() {
+  stek* temp = top;
+  int a = 1;
+  while (temp != nullptr) {
+    cout << endl << a << ": " << temp->mark << '\t' << temp->color << endl;
+    temp = temp->next;
+    a++;
+  }
+}
+
+void PrintToFile(stek *head) {
+    ofstream file("test.txt", ios::binary);    
+    stek* cur = top;
+    while (cur != nullptr) {
+        file.write((char*)cur, sizeof(stek));
+        cur = cur->next;
     }
+    file.close();
 }
 
-
-
-
-
-int main (){
-    note *head=nullptr;
-    head = EnterNotes(head); // Передаємо адресу i-го елемента
-    PrintNotes(head);
-    return 0;
+void ReadFromFile() {
+    stek temp;
+    ifstream file("test.txt", ios::binary);
+    while (top != nullptr) {
+        stek* temp_ptr = top;
+        top = top->next;
+        delete temp_ptr;
+    }
+    while (file.read((char*)&temp, sizeof(stek))) {
+        stek* new_node = new stek;
+        strcpy(new_node->mark, temp.mark);
+        strcpy(new_node->color, temp.color);
+        new_node->next = top;
+        top = new_node;
+    }
+    
+    file.close();
 }
+
+int main() {
+  int x = 0, l = 0;
+  do {
+    cout << "\n 1 - add, 3 - print 2 - PrintToFile 4 - ReadFromFile\n your choise: ";
+    cin >> x;
+    switch (x) {
+    case 1:
+      cout << "\nenter a num of element:";
+      cin >> l;
+      add(l);
+      break;
+      case 2:
+    PrintToFile(top);
+    break;
+      case 3:
+    print();
+    break;
+      case 4:
+    ReadFromFile();
+    break;
+    }
+  } while (x != 0);
+  return 0;
+}
+
